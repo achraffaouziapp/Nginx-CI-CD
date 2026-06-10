@@ -1,4 +1,4 @@
-name: CI Pipeline Niveau 1
+name: CI Pipeline
 
 on:
   push:
@@ -14,14 +14,34 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Vérifier les fichiers essentiels
+      run: |
+        for file in index.html default.conf Dockerfile; do
+          if [ ! -f "$file" ]; then
+            echo "Erreur: $file manquant!"
+            exit 1 
+          fi
+        done 
+
     - name: Build Docker image
       run: docker build -t nginx-ci-demo .
 
     - name: Test Nginx configuration
       run: docker run --rm nginx-ci-demo nginx -t
 
-    - name: Run Nginx container
+      #PARTIE1
+    # - name: Run Nginx container
+    #   run: |
+    #     docker run -d --name nginx-test -p 8080:80 nginx-ci-demo
+    #     sleep 5
+    #     curl -f http://localhost:8080 || exit 1
+
+      #PARTIE2
+    - name: Run Nginx container & Test HTTP
       run: |
         docker run -d --name nginx-test -p 8080:80 nginx-ci-demo
         sleep 5
+        
         curl -f http://localhost:8080 || exit 1
+
+        curl -f http://localhost:8080/health || exit 1  
