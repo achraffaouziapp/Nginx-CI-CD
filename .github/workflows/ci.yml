@@ -1,0 +1,27 @@
+name: CI Pipeline Niveau 1
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: docker build -t nginx-ci-demo .
+
+    - name: Test Nginx configuration
+      run: docker run --rm nginx-ci-demo nginx -t
+
+    - name: Run Nginx container
+      run: |
+        docker run -d --name nginx-test -p 8080:80 nginx-ci-demo
+        sleep 5
+        curl -f http://localhost:8080 || exit 1
